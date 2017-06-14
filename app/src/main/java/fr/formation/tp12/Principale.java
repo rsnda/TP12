@@ -1,8 +1,10 @@
 package fr.formation.tp12;
 
+import android.content.Intent;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.Toast;
 
 import java.util.List;
@@ -147,5 +149,10 @@ public class Principale extends AppCompatActivity {
                 "The number of elements retrieved is " + count,
                 Toast.LENGTH_LONG).show();
 
+    }
+
+    public void fab_click(View view){
+        Intent intent = new Intent(this, AddUserActivity.class);
+        startActivity(intent);
     }
 }
