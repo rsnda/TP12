@@ -60,7 +60,7 @@ public class AddUserActivity extends AppCompatActivity {
     }
 
     public void openDB() throws SQLiteException {
-        dataSource.getDB();
+        dataSource.open();
     }
 
     public void closeDB() {

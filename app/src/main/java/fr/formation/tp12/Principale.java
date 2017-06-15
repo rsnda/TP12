@@ -4,9 +4,12 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import fr.formation.tp12.database.datasource.DataSource;
@@ -15,11 +18,15 @@ import fr.formation.tp12.database.modele.User;
 public class Principale extends AppCompatActivity {
 
     DataSource<User> dataSource;
+    RecyclerViewAdapter adapter;
+    List<String> items = new ArrayList<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_principale);
+
+
 
         // Create or retrieve the database
         try {
@@ -57,6 +64,23 @@ public class Principale extends AppCompatActivity {
         // And then delete it:
         // -------------------
         //deleteRecord(user);
+
+        // Instanciation du recyclerview :
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.myListSimple);
+        List<User> users = dataSource.readAll();
+        for (User user1 : users) {
+            items.add(user1.getNom());
+        }
+
+        adapter = new RecyclerViewAdapter(items, android.R.layout.simple_list_item_1);
+        recyclerView.setAdapter(adapter);
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    public void add(String item, int position) {
+        items.add(position, item); // on insère le nouvel objet dans notre       liste d'article lié à l'adapter
+        adapter.notifyItemInserted(position); // on notifie à l'adapter ce changement
     }
 
     @Override
@@ -72,7 +96,7 @@ public class Principale extends AppCompatActivity {
     }
 
     public void openDB() throws SQLiteException {
-        dataSource.getDB();
+        dataSource.open();
     }
 
     public void closeDB() {
