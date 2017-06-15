@@ -25,7 +25,7 @@ public class DataSource<T extends Modele> {
     }*/
 
     public void open() throws SQLException {
-        db = helper.getWritableDatabase();
+        if (db == null) db = helper.getWritableDatabase();
     }
 
     public void close() {

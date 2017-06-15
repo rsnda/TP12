@@ -9,6 +9,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +21,7 @@ public class Principale extends AppCompatActivity {
 
     DataSource<User> dataSource;
     RecyclerViewAdapter adapter;
+    RecyclerView recyclerView;
     List<String> items = new ArrayList<>();
 
     @Override
@@ -26,51 +29,8 @@ public class Principale extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_principale);
 
-
-
-        // Create or retrieve the database
-        try {
-            dataSource = new DataSource<>(this, User.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // open the database
-        openDB();
-
-        // Insert a new record
-        // -------------------
-        User user = new User();
-        user.setNom("Tintin");
-        try {
-            insertRecord(user);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // update that line
-        // ----------------
-        try {
-            user.setNom("Bidochon");
-            updateRecord(user);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // Query that line
-        // ---------------
-        queryTheDatabase();
-
-        // And then delete it:
-        // -------------------
-        //deleteRecord(user);
-
         // Instanciation du recyclerview :
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.myListSimple);
-        List<User> users = dataSource.readAll();
-        for (User user1 : users) {
-            items.add(user1.getNom());
-        }
+        recyclerView = (RecyclerView) findViewById(R.id.myListSimple);
 
         adapter = new RecyclerViewAdapter(items, android.R.layout.simple_list_item_1);
         recyclerView.setAdapter(adapter);
@@ -78,29 +38,41 @@ public class Principale extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    public void add(String item, int position) {
-        items.add(position, item); // on insère le nouvel objet dans notre       liste d'article lié à l'adapter
-        adapter.notifyItemInserted(position); // on notifie à l'adapter ce changement
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-        openDB();
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        closeDB();
+
     }
 
-    public void openDB() throws SQLiteException {
-        dataSource.open();
+    @Override
+    protected void onStart() {
+        super.onStart();
+        try {
+            if (dataSource == null) {
+                dataSource = new DataSource<>(this, User.class);
+                dataSource.open();
+            }
+        } catch (Exception e) {
+            // Traiter le cas !
+            e.printStackTrace();
+        }
     }
 
-    public void closeDB() {
-        dataSource.close();
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            dataSource.close();
+        } catch (Exception e) {
+            // Traiter le cas !
+            e.printStackTrace();
+        }
     }
 
     private long insertRecord(User user) throws Exception {
@@ -110,11 +82,9 @@ public class Principale extends AppCompatActivity {
 
         // Test to see if the insertion was ok
         if (rowId == -1) {
-            Toast.makeText(this, "Error when creating an User",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Error when creating an User", Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(this, "User created and stored in database",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "User created and stored in database", Toast.LENGTH_LONG).show();
         }
         return rowId;
     }
@@ -130,11 +100,9 @@ public class Principale extends AppCompatActivity {
 
         // test to see if the insertion was ok
         if (rowId == -1) {
-            Toast.makeText(this, "Error when updating an User",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Error when updating an User", Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(this, "User updated in database", Toast.LENGTH_LONG)
-                    .show();
+            Toast.makeText(this, "User updated in database", Toast.LENGTH_LONG).show();
         }
         return rowId;
     }
@@ -142,11 +110,9 @@ public class Principale extends AppCompatActivity {
     private void deleteRecord(User user) {
         long rowId = dataSource.delete(user);
         if (rowId == -1) {
-            Toast.makeText(this, "Error when deleting an User",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Error when deleting an User", Toast.LENGTH_LONG).show();
         } else {
-            Toast.makeText(this, "User deleted in database", Toast.LENGTH_LONG)
-                    .show();
+            Toast.makeText(this, "User deleted in database", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -163,20 +129,34 @@ public class Principale extends AppCompatActivity {
         int count = 0;
         for (User user : users
                 ) {
-            Toast.makeText(
-                    this,
-                    "Utilisateur :" + user.getNom() + "("
-                            + user.getId() + ")", Toast.LENGTH_LONG).show();
+            Toast.makeText(this,
+                    "Utilisateur :" + user.getNom() + "(" + user.getId() + ")", Toast.LENGTH_LONG).show();
             count++;
         }
         Toast.makeText(this,
-                "The number of elements retrieved is " + count,
-                Toast.LENGTH_LONG).show();
+                "The number of elements retrieved is " + count, Toast.LENGTH_LONG).show();
 
     }
 
     public void fab_click(View view){
         Intent intent = new Intent(this, AddUserActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, 2);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        String flux = data.getStringExtra("NEWUSER"); // Tester si pas null ;-)
+        User utilisateur = new Gson().fromJson(flux, User.class);
+
+        try {
+            dataSource.insert(utilisateur);
+        } catch (Exception e) {
+            // Que faire :-(
+            e.printStackTrace();
+        }
+
+        // Indiquer un changement au RecycleView
+        queryTheDatabase();
+        adapter.notifyDataSetChanged();
     }
 }
