@@ -23,6 +23,7 @@ public class Principale extends AppCompatActivity {
     RecyclerViewAdapter adapter;
     RecyclerView recyclerView;
     List<String> items = new ArrayList<>();
+    private List<User> utilisateurs = new ArrayList<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,7 +33,7 @@ public class Principale extends AppCompatActivity {
         // Instanciation du recyclerview :
         recyclerView = (RecyclerView) findViewById(R.id.myListSimple);
 
-        adapter = new RecyclerViewAdapter(items, android.R.layout.simple_list_item_1);
+        adapter = new RecyclerViewAdapter(utilisateurs, android.R.layout.simple_list_item_1);
         recyclerView.setAdapter(adapter);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -41,7 +42,7 @@ public class Principale extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
+        chargerUtilisateurs();
     }
 
     @Override
@@ -74,6 +75,8 @@ public class Principale extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+
 
     private long insertRecord(User user) throws Exception {
 
@@ -116,27 +119,18 @@ public class Principale extends AppCompatActivity {
         }
     }
 
-    /**
-     * Query a the database
-     */
-    private void queryTheDatabase() {
-        List<User> users = dataSource.readAll();
-        displayResults(users);
-    }
-
-    private void displayResults(List<User> users) {
-
-        int count = 0;
-        for (User user : users
-                ) {
-            Toast.makeText(this,
-                    "Utilisateur :" + user.getNom() + "(" + user.getId() + ")", Toast.LENGTH_LONG).show();
-            count++;
+    private void chargerUtilisateurs() {
+        // On charge les données depuis la base.
+        try {
+            List<User> users = dataSource.readAll();
+            utilisateurs.clear();
+            utilisateurs.addAll(users);
+        } catch (Exception e) {
+            // Que faire ?
+            e.printStackTrace();
         }
-        Toast.makeText(this,
-                "The number of elements retrieved is " + count, Toast.LENGTH_LONG).show();
-
     }
+
 
     public void fab_click(View view){
         Intent intent = new Intent(this, AddUserActivity.class);
@@ -156,7 +150,7 @@ public class Principale extends AppCompatActivity {
         }
 
         // Indiquer un changement au RecycleView
-        queryTheDatabase();
+        chargerUtilisateurs();
         adapter.notifyDataSetChanged();
     }
 }

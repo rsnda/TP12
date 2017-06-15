@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import fr.formation.tp12.database.modele.User;
+
 /**
  * Created by admin on 15/06/2017.
  */
@@ -17,7 +19,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     /**
      * List items
      */
-    private List<String> items;
+    private List<User> items;
     /**
      * the resource id of item Layout
      */
@@ -28,7 +30,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
      * @param items : the list items
      * @param itemLayout : the resource id of itemView
      */
-    public RecyclerViewAdapter(List<String> items, int itemLayout) {
+    public RecyclerViewAdapter(List<User> items, int itemLayout) {
         this.items = items;
         this.itemLayout = itemLayout;
     }
@@ -62,9 +64,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @Override
     public void onBindViewHolder(RecyclerViewAdapter.ViewHolder holder, int position) {
         // find item by position
-        String item = items.get(position);
-        // save information in holder, we have one type in this adapter
-        holder.primaryText.setText(item);
+        User item = items.get(position);
+        // save information in holder, we have ne type in this adapter
+        holder.primaryText.setText(item.getNom());
         holder.itemView.setTag(item);
         if ((position % 2) == 0) {
             holder.itemView.setBackgroundResource(R.color.colorPrimary);
